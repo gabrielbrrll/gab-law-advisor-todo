@@ -4,7 +4,8 @@ import httpStatus from 'http-status';
 import config from '../config/config';
 import logger from '../config/logger.config';
 
-export const errorHandler: ErrorRequestHandler = (err, _, res) => {
+// need to explicitly add param next so express can recognize as error handler
+export const errorHandler: ErrorRequestHandler = (err, _, res, next) => {
   let { statusCode = 500, message } = err;
 
   if (config.env === 'production' && !err.isOperational) {

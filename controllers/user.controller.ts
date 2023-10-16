@@ -30,7 +30,7 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
       expiresIn: '1h'
     });
 
-    res.status(201).json({ token });
+    res.status(201).json({ success: true, token });
   } catch (e) {
     if (e instanceof Error && e.message === 'Username already exists') {
       return next(
@@ -47,7 +47,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     const token = await authService.loginUser(username, password);
 
     if (token) {
-      res.json({ token });
+      res.json({ success: true, token });
     } else {
       next(new ApiError(httpStatus.UNAUTHORIZED, 'Invalid username or password.'));
     }

@@ -36,13 +36,13 @@ const createServer = () => {
   // v1 api routes
   app.use('/v1', userRoutes);
 
-  // handle error
-  app.use(errorHandler);
-
   // send back a 404 error for any unknown api request
-  app.use((req, res, next) => {
+  app.use((_, __, next) => {
     next(new ApiError(httpStatus.NOT_FOUND, 'Not found'));
   });
+
+  // handle error
+  app.use(errorHandler);
 
   return app;
 };
