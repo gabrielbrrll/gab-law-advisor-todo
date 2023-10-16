@@ -1,0 +1,42 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log
+
+# TypeScript
+*.tsbuildinfo
+dist/
+
+# Prisma
+prisma/.env
+*.prisma~
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+
+# Operating System
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# Debug files
+*.log
+*.pid
+*.seed
+
+# Temp
+*.tmp
+*.temp
+
+# Backup & Restore
+*.bak
