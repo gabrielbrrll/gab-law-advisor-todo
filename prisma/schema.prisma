@@ -20,8 +20,8 @@ model User {
 model Todo {
   id          Int     @id @default(autoincrement())
   content     String 
-  order       Int
-  isComplete  Boolean
+  order       Int?    @default(autoincrement())
+  isComplete  Boolean @default(false)
   user        User    @relation(fields: [userId], references: [id])
   userId      Int
 }

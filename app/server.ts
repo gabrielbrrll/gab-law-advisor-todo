@@ -3,8 +3,10 @@ import helmet from 'helmet';
 import compression from 'compression';
 import cors from 'cors';
 import httpStatus from 'http-status';
+
 import xss from '../middleware/xss';
 import userRoutes from '../routes/user.routes';
+import todoRoutes from '../routes/task.routes';
 import passportConfig from '../config/passport.config';
 import ApiError from '../utils/ApiError';
 import { errorHandler } from '../middleware/errors';
@@ -34,7 +36,8 @@ const createServer = () => {
   app.use(passportConfig.initialize());
 
   // v1 api routes
-  app.use('/v1', userRoutes);
+  app.use('/v1/users', userRoutes);
+  app.use('/v1/tasks', todoRoutes);
 
   // send back a 404 error for any unknown api request
   app.use((_, __, next) => {
