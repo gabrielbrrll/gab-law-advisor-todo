@@ -7,6 +7,7 @@ import xss from '../middleware/xss';
 import userRoutes from '../routes/user.routes';
 import passportConfig from '../config/passport.config';
 import ApiError from '../utils/ApiError';
+import { errorHandler } from '../middleware/errors';
 
 const createServer = () => {
   const app = express();
@@ -34,6 +35,9 @@ const createServer = () => {
 
   // v1 api routes
   app.use('/v1', userRoutes);
+
+  // handle error
+  app.use(errorHandler);
 
   // send back a 404 error for any unknown api request
   app.use((req, res, next) => {
