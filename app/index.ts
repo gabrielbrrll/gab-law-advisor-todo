@@ -1,53 +1,42 @@
-import express from 'express';
-import userRoutes from '../routes/user.routes';
-import prisma from '../database/db';
-import passport from 'passport';
-import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
+import { Server } from 'http';
 
-const jwtOptions = {
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: process.env.JWT_SECRET
+import createServer from './server';
+import prisma from '../database/client';
+import logger from '../config/logger.config';
+import config from '../config/config';
+
+const app = createServer();
+
+let server: Server;
+prisma.$connect().then(() => {
+  logger.info('Connected to postgres/prisma Database');
+  server = app.listen(config.port, () => {
+    logger.info(`Listening to port ${config.port}`);
+  });
+});
+
+const exitHandler = () => {
+  if (server) {
+    server.close(() => {
+      logger.info('Server closed');
+      process.exit(1);
+    });
+  } else {
+    process.exit(1);
+  }
 };
 
-passport.use(
-  new JwtStrategy(jwtOptions, async (jwtPayload, done) => {
-    try {
-      const user = await prisma.user.findUnique({
-        where: { id: jwtPayload.id }
-      });
-      if (user) {
-        return done(null, user);
-      } else {
-        return done(null, false);
-      }
-    } catch (err) {
-      return done(err, false);
-    }
-  })
-);
+const unexpectedErrorHandler = (error: unknown) => {
+  logger.error(error);
+  exitHandler();
+};
 
-const app = express();
-const PORT = 3000;
+process.on('uncaughtException', unexpectedErrorHandler);
+process.on('unhandledRejection', unexpectedErrorHandler);
 
-app.use(express.json());
-app.use(passport.initialize());
-
-// Mount the user routes
-app.use('/users', userRoutes);
-
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
-
-// Graceful shutdown to ensure that Prisma client disconnects
-process.on('SIGTERM', async () => {
-  console.info('SIGTERM signal received.');
-  await prisma.$disconnect();
-  process.exit(0);
-});
-
-process.on('SIGINT', async () => {
-  console.info('SIGINT signal received.');
-  await prisma.$disconnect();
-  process.exit(0);
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM received');
+  if (server) {
+    server.close();
+  }
 });

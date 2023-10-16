@@ -1,61 +1,35 @@
-import prisma from '../database/db';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import prisma from '../database/client';
+import { hashPassword, comparePassword } from '../helpers/bcrypt.helper';
 
 export async function getAllUsers() {
-  try {
-    return await prisma.user.findMany();
-  } catch (error) {
-    throw new Error('Error retrieving users');
-  }
+  return prisma.user.findMany();
 }
 
 export async function createUser(username: string, password: string) {
-  try {
-    // Hash the password before saving it
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+  await checkExistingUsername(username);
 
-    // Save the user to the database with the hashed password
-    return await prisma.user.create({
-      data: {
-        username: username,
-        password: hashedPassword
-      }
-    });
-  } catch (error) {
-    throw new Error('Error creating user');
-  }
+  const hashedPassword = await hashPassword(password);
+
+  return prisma.user.create({
+    data: {
+      username,
+      password: hashedPassword
+    }
+  });
 }
 
-export async function loginUser(username: string, password: string): Promise<string | null> {
-  // Find the user by their username
-  const user = await prisma.user.findUnique({
+export async function checkExistingUsername(username: string) {
+  const existingUser = await prisma.user.findUnique({
     where: {
-      username
+      username: username
     }
   });
 
-  if (!user) {
-    return null;
+  if (existingUser) {
+    throw new Error('Username already exists');
   }
+}
 
-  // Compare provided password with stored hashed password
-  const isPasswordValid = await bcrypt.compare(password, user.password);
-
-  if (!isPasswordValid) {
-    return null;
-  }
-
-  // If passwords match, generate JWT token
-  const userPayload = {
-    id: user.id,
-    username: user.username
-  };
-
-  const token = jwt.sign(userPayload, process.env.JWT_SECRET!, {
-    expiresIn: '1h'
-  });
-
-  return token;
+export async function findUserByUsername(username: string) {
+  return prisma.user.findUnique({ where: { username } });
 }

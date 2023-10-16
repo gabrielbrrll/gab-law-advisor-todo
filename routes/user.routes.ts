@@ -1,7 +1,12 @@
 import { Router } from 'express';
-import * as userService from '../services/user.service';
 import passport from 'passport';
 import jwt from 'jsonwebtoken';
+
+import * as userService from '../services/user.service';
+import * as authService from '../services/auth.service';
+import validate from '../middleware/validate';
+import authValidation from '../validations/auth.validation';
+import config from '../config/config';
 
 const router = Router();
 
@@ -15,7 +20,7 @@ router.get('/', passport.authenticate('jwt', { session: false }), async (_req, r
   }
 });
 
-router.post('/signup', async (req, res) => {
+router.post('/signup', validate(authValidation.register), async (req, res) => {
   try {
     const { username, password } = req.body;
     const user = await userService.createUser(username, password);
@@ -25,13 +30,22 @@ router.post('/signup', async (req, res) => {
       username: user.username
     };
 
-    const token = jwt.sign(userPayload, process.env.JWT_SECRET!, {
+    const token = jwt.sign(userPayload, config.jwt.secret!, {
       expiresIn: '1h'
     });
 
     res.status(201).json({ token });
   } catch (e) {
-    console.error(e);
+    if (e instanceof Error) {
+      console.error(e.message); // Now it's safe to access the message property
+
+      if (e.message === 'Username already exists') {
+        return res.status(400).json({ error: 'Username already exists. Please choose another.' });
+      }
+    } else {
+      console.error(e); // If e is not an instance of Error, just log it as it is.
+    }
+
     res.status(500).json({ error: 'An error occurred during signup.' });
   }
 });
@@ -39,7 +53,7 @@ router.post('/signup', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    const token = await userService.loginUser(username, password);
+    const token = await authService.loginUser(username, password);
 
     if (token) {
       res.json({ token });
