@@ -5,7 +5,8 @@ const addTask = Joi.object({
 });
 
 const updateTask = Joi.object({
-  content: Joi.string().min(3).max(200)
+  content: Joi.string().min(1).max(200).required(),
+  isComplete: Joi.boolean()
 }).min(1); // at least one field should be updated
 
 export default {
