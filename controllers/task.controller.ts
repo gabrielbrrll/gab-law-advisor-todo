@@ -4,6 +4,7 @@ import httpStatus from 'http-status';
 import * as todoService from '../services/task.service';
 import ApiError from '../utils/ApiError';
 import { Todo, User } from '@prisma/client';
+import { TaskOwnershipError } from '../utils/TaskOwnershipError';
 
 const BASE_10_RADIX = 10;
 
@@ -45,7 +46,7 @@ export const updateTask = async (req: Request, res: Response, next: NextFunction
       data: task
     });
   } catch (e: any) {
-    if (e.message === 'Task not found or not owned by the user') {
+    if (e instanceof TaskOwnershipError) {
       next(new ApiError(httpStatus.UNAUTHORIZED, e.message));
     }
 
@@ -64,7 +65,7 @@ export const removeTask = async (req: Request, res: Response, next: NextFunction
       success: true
     });
   } catch (e: any) {
-    if (e.message === 'Task not found or not owned by the user') {
+    if (e instanceof TaskOwnershipError) {
       next(new ApiError(httpStatus.UNAUTHORIZED, e.message));
     }
 

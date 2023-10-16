@@ -8,6 +8,12 @@ const register = Joi.object({
   })
 });
 
+const login = Joi.object({
+  username: Joi.string().required(),
+  password: Joi.string().required()
+});
+
 export default {
-  register
+  register,
+  login
 };

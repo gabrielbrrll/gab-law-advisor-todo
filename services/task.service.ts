@@ -1,6 +1,7 @@
 import { Todo } from '@prisma/client';
 
 import prisma from '../database/client';
+import { TaskOwnershipError } from '../utils/TaskOwnershipError';
 
 export async function listTasks(userId: number) {
   return prisma.todo.findMany({ where: { userId } });
@@ -21,7 +22,7 @@ export async function updateTask(userId: number, taskId: number, newTaskData: To
   const existingTask = await prisma.todo.findUnique({ where: { id: taskId } });
 
   if (!existingTask || existingTask.userId !== userId) {
-    throw new Error('Task not found or not owned by the user');
+    throw new TaskOwnershipError();
   }
 
   return prisma.todo.update({
@@ -38,7 +39,7 @@ export async function removeTask(userId: number, taskId: number) {
   const task = await prisma.todo.findUnique({ where: { id: taskId } });
 
   if (!task || task.userId !== userId) {
-    throw new Error('Task not found or not owned by the user');
+    throw new TaskOwnershipError();
   }
 
   return prisma.todo.delete({ where: { id: taskId } });

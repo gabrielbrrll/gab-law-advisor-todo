@@ -10,6 +10,6 @@ const router = Router();
 router.get('/', authenticateJwt, userController.getAllUsers);
 
 router.post('/signup', validate(authValidation.register), userController.signup);
-router.post('/login', userController.login);
+router.post('/login', validate(authValidation.login), userController.login);
 
 export default router;

@@ -2,19 +2,22 @@ import { Router } from 'express';
 
 import authenticateJwt from '../middleware/auth';
 import * as todoController from '../controllers/task.controller';
+import taskValidation from '../validations/task.validation';
+import validate from '../middleware/validate';
 
 const router = Router();
 
-// List all tasks of the logged-in user
 router.get('/', authenticateJwt, todoController.listTasks);
 
-// Add a new task
-router.post('/', authenticateJwt, todoController.addTask);
+router.post('/', authenticateJwt, validate(taskValidation.addTask), todoController.addTask);
 
-// Update a task (the user can only update their own tasks)
-router.put('/:taskId', authenticateJwt, todoController.updateTask);
+router.put(
+  '/:taskId',
+  authenticateJwt,
+  validate(taskValidation.updateTask),
+  todoController.updateTask
+);
 
-// Remove a task (the user can only remove their own tasks)
 router.delete('/:taskId', authenticateJwt, todoController.removeTask);
 
 export default router;
