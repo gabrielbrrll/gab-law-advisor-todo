@@ -28,58 +28,60 @@ This repository contains the code for a technical exam as part of a job applicat
 
 1. **Clone the Repository**:
 
-   ```bash
-   git clone [repository-url]
-   cd lawadvisor-todo-api
-   ```
+ ```
+ git clone https://github.com/gabrielbrrll/gab-law-advisor-todo.git
+ cd lawadvisor-todo-api
+ ```
 
-First, you need to clone the repository to your local machine. You can use the following command:
-
-bash
-Copy code
-git clone [repository-url]
-cd lawadvisor-todo-api
-Install Dependencies
+2. **Install Dependencies**
 
 Once you're in the project directory, install the necessary packages using npm:
 
-bash
-Copy code
+```
 npm install
-Setup the Database
+```
 
-Ensure PostgreSQL is installed and running.
-Create a database for the application.
-Update the database connection details in the appropriate configuration file.
-Run Prisma Migrations
+3. **Setup the Database**
+
+I used a third-party postgres database from railway.app.
+
+- Ensure PostgreSQL is installed and running.
+- Create a database for the application.
+- Update the database connection details in the appropriate configuration file.
+
+4. **Run Prisma Migrations**
 
 Before you start the server, you need to run Prisma migrations to ensure your database schema is up-to-date:
 
-bash
-Copy code
+```
 npx prisma migrate dev --preview-feature
-Start the Server
+```
+
+5. **Start the Server**
 
 There are two ways to start the server:
 
 In development mode with nodemon:
 
-bash
-Copy code
+```
 npm run dev
+```
+
 Or, in production mode:
 
-bash
-Copy code
+```
 npm start
+```
+
 Once the server starts, you should see logs indicating that the server is running and that it has connected to the PostgreSQL/Prisma database.
 
-Testing the API
+6. **Testing the API**
 
 With the server running, you can use tools like Postman or Insomnia to test the API endpoints. The API routes are prefixed with /v1.
 
 ## Folder structure
 
+```
 │
 ├── app - Core application files.
 │
@@ -104,70 +106,64 @@ With the server running, you can use tools like Postman or Insomnia to test the 
 ├── services - Business logic for processing data and interfacing with the database.
 │
 └── utils - Additional utility files and helper functions.
+```
 
 ## Tech Stack
 
-Core
-Node.js: The runtime environment used to execute the server-side JavaScript code.
+### Core
+- **Node.js**: The runtime environment used to execute the server-side JavaScript code.
+- **Express**: A minimal and flexible web application framework for Node.js, providing a robust set of features for web and mobile applications.
 
-Express: A minimal and flexible web application framework for Node.js, providing a robust set of features for web and mobile applications.
+### Security
+- **bcrypt**: A library to help with hashing passwords for secure storage.
+- **helmet**: Helps secure Express applications with various HTTP headers.
+- **express-jwt**: Middleware for validating JWTs for authentication.
+- **passport**: Express-compatible authentication middleware for Node.js.
+- **passport-jwt**: A Passport strategy for authenticating with a JSON Web Token.
 
-Security
-bcrypt: A library to help with hashing passwords for secure storage.
+### Database
+- **@prisma/client**: The Prisma client library providing access to the database.
+- **pg**: Non-blocking PostgreSQL client for Node.js. Useful for connecting to PostgreSQL databases.
+- **prisma**: The Prisma CLI for database migrations and other database-related tasks.
 
-helmet: Helps secure Express applications with various HTTP headers.
+### Data Validation
+- **joi**: Object schema description language and validator for JavaScript objects.
 
-express-jwt: Middleware for validating JWTs for authentication.
+### Development
+- **nodemon**: A utility that monitors for any changes in your source and automatically restarts the server.
+- **typescript**: A typed superset of JavaScript that compiles to plain JavaScript.
+- **ts-node**: Executes TypeScript directly, used for running the app in development.
 
-passport: Express-compatible authentication middleware for Node.js.
-
-passport-jwt: A Passport strategy for authenticating with a JSON Web Token.
-
-Database
-@prisma/client: The Prisma client library providing access to the database.
-
-pg: Non-blocking PostgreSQL client for Node.js. Useful for connecting to PostgreSQL databases.
-
-prisma: The Prisma CLI for database migrations and other database-related tasks.
-
-Data Validation
-joi: Object schema description language and validator for JavaScript objects.
-Development
-nodemon: A utility that monitors for any changes in your source and automatically restarts the server.
-
-typescript: A typed superset of JavaScript that compiles to plain JavaScript.
-
-ts-node: Executes TypeScript directly, used for running the app in development.
-
-Utilities
-compression: Middleware that will attempt to compress response bodies for all request that traverse through the middleware.
-
-cors: Middleware for enabling Cross-Origin Resource Sharing in the Express app.
-
-http-status: Utility to interact with HTTP status codes.
-
-jsonwebtoken: An implementation of JSON Web Tokens.
-
-winston: A multi-transport async logging library for Node.js.
-
-xss-filters: A library to sanitize user data to prevent XSS attacks.
+### Utilities
+- **compression**: Middleware that will attempt to compress response bodies for all requests that traverse through the middleware.
+- **cors**: Middleware for enabling Cross-Origin Resource Sharing in the Express app.
+- **http-status**: Utility to interact with HTTP status codes.
+- **jsonwebtoken**: An implementation of JSON Web Tokens.
+- **winston**: A multi-transport async logging library for Node.js.
+- **xss-filters**: A library to sanitize user data to prevent XSS attacks.
 
 ## Functionality
 
-Ordering API
+### Ordering API
 
-Lexical RankString for TODOs
+> **Wasn't able to finish it on time, but this was my goal initially -- to make it more scalable in the future using a concept called rankString or lexicon ordering, this is what Jira is doing**
+> https://softwareengineering.stackexchange.com/questions/195308/storing-a-re-orderable-list-in-a-database
+
+#### Lexical RankString for TODOs
 Use this system to generate rank strings for ordering TODOs, especially in drag-and-drop contexts.
 
-Why Use This?
-Efficient Ordering: With this approach, when you move a TODO, you don't have to update the order of all other TODOs.
-Scalable: Can handle a large number of TODOs without frequent recalculations.
-How It Works
-Base Case: If it's the first TODO, the rank string is '0|aaaa:'.
-Increment: For existing TODOs, it checks the last rank string and increases its value lexicographically.
-Handling 'z': If a rank ends with 'z', it rolls over, like how 9 becomes 10 in numbering.
-Drag-and-Drop
-Top: Generate a rank before the first TODO.
-Between: Generate a rank after the previous TODO.
-Bottom: Generate a rank after the last TODO.
-Note: Continuous insertions between two points may exhaust available ranks. Consider recalculating ranks if this happens frequently.
+##### Why Use This?
+- **Efficient Ordering**: With this approach, when you move a TODO, you don't have to update the order of all other TODOs.
+- **Scalable**: Can handle a large number of TODOs without frequent recalculations.
+
+##### How It Works
+- **Base Case**: If it's the first TODO, the rank string is '0|aaaa:'.
+- **Increment**: For existing TODOs, it checks the last rank string and increases its value lexicographically.
+- **Handling 'z'**: If a rank ends with 'z', it rolls over, like how 9 becomes 10 in numbering.
+
+#### Drag-and-Drop
+- **Top**: Generate a rank before the first TODO.
+- **Between**: Generate a rank after the previous TODO.
+- **Bottom**: Generate a rank after the last TODO.
+
+> **Note**: Continuous insertions between two points may exhaust available ranks. Consider normalization or recalculating ranks if this happens frequently.
