@@ -9,7 +9,13 @@ const updateTask = Joi.object({
   isComplete: Joi.boolean()
 }).min(1); // at least one field should be updated
 
+const reorderTask = Joi.object({
+  prevRank: Joi.string().required(),
+  nextRank: Joi.string().required()
+});
+
 export default {
   addTask,
-  updateTask
+  updateTask,
+  reorderTask
 };

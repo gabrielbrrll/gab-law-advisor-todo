@@ -18,6 +18,13 @@ router.put(
   todoController.updateTask
 );
 
+router.put(
+  '/reorder/:taskId',
+  authenticateJwt,
+  validate(taskValidation.reorderTask),
+  todoController.reorderTask
+);
+
 router.delete('/:taskId', authenticateJwt, todoController.removeTask);
 
 export default router;

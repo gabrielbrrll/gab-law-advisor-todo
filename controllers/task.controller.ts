@@ -6,6 +6,8 @@ import ApiError from '../utils/ApiError';
 import { Todo, User } from '@prisma/client';
 import { TaskOwnershipError } from '../utils/TaskOwnershipError';
 import logger from '../config/logger.config';
+import { calculateMiddleRankString, getNextRankString } from '../helpers/task.helper';
+import RankStringUniquenessError from '../utils/RankStringUniquenessError';
 
 const BASE_10_RADIX = 10;
 
@@ -27,7 +29,16 @@ export const addTask = async (req: Request, res: Response, next: NextFunction) =
     const userId = (req.user as User)?.id;
     const taskData = req.body as Todo;
 
-    const task = await todoService.addTask(userId, taskData);
+    // Fetch the rank of the last task to determine the new task's rank
+    const lastTaskRank = await todoService.getLastTaskRank(userId);
+    const newTaskRank = getNextRankString(lastTaskRank);
+    logger.info(lastTaskRank);
+    logger.info(newTaskRank);
+
+    const task = await todoService.addTask(userId, {
+      ...taskData,
+      rankString: newTaskRank
+    });
 
     logger.info(`Task added for user ${userId}.`);
     res.status(httpStatus.CREATED).json({
@@ -86,5 +97,32 @@ export const removeTask = async (req: Request, res: Response, next: NextFunction
 
     logger.error('Error while removing task:', e);
     next(new ApiError(httpStatus.BAD_REQUEST, 'An error occurred while removing the task.'));
+  }
+};
+
+export const reorderTask = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = (req.user as User)?.id;
+    const taskId = parseInt(req.params.taskId, 10);
+    const { prevRank, nextRank } = req.body;
+
+    const initialRankString = calculateMiddleRankString(prevRank, nextRank);
+    const task = await todoService.reorderTask(userId, taskId, initialRankString);
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: task
+    });
+  } catch (e) {
+    if (e instanceof RankStringUniquenessError) {
+      next(
+        new ApiError(
+          httpStatus.CONFLICT,
+          'Rank string conflict. Unable to reorder the task after multiple attempts.'
+        )
+      );
+    } else {
+      next(new ApiError(httpStatus.BAD_REQUEST, 'An error occurred while reordering the task.'));
+    }
   }
 };
