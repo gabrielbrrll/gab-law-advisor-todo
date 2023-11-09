@@ -1,6 +1,6 @@
-# LawAdvisor Todo API
+# Todo API
 
-This repository contains the code for a technical exam as part of a job application at LawAdvisor Ventures. The goal of this project is to create an API for managing a TODO list with specific functionalities.
+The goal of this project is to create an API for managing a TODO list with specific functionalities.
 
 ## Features
 
